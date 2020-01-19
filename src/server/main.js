@@ -6,6 +6,7 @@ import express from "express";
 import compression from "compression";
 import React from "react";
 import ReactDOMServer from "react-dom/server.js";
+import { ServerStyleSheet } from "styled-components";
 
 import webpackConfig from "../../webpack.config.js";
 import Main from "../client/main.js";
@@ -35,8 +36,12 @@ async function getItems() {
 
 app.get("/", async (req, res) => {
   const initialState = { items: await getItems() };
-  const reactRoot = ReactDOMServer.renderToString(React.createElement(Main, initialState));
+  const styles = new ServerStyleSheet();
+  const reactRoot = ReactDOMServer.renderToString(styles.collectStyles(React.createElement(Main, initialState)));
+  const styleTags = styles.getStyleTags();
+  styles.seal();
   res.render("index", {
+    styleTags,
     initialState: JSON.stringify(initialState)
       .replace(/\\n/g, '\\\\n')
       .replace(/"/g, '\\"'),
