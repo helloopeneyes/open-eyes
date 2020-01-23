@@ -44,22 +44,28 @@ const ControlContainer = styled.div`
 `;
 
 export default class Main extends Component {
-  state = {
-    counter: 0
-  };
+  state = { items: [], isClient: false };
+  constructor(props) {
+    super(props);
+    this.state.items = props.items || [];
+  }
   componentDidMount() {
     this.setState({ isClient: true });
   }
+  async voteOnItem(name) {
+    await fetch(`/api/votes/${name}`, { method: "post" });
+    this.setState({ items: await fetch("/api/items").then(r => r.json()) });
+  }
   render() {
-    const { isClient, counter } = this.state;
+    const { isClient } = this.state;
     return (
       <ClientContext.Provider value={isClient}>
-        <span>{counter}</span>
-        {this.props.items.map((f, i) => (
+        {this.state.items.map((item, i) => (
           <div key={i}>
-            <pre>{f.contents}</pre>
+            <pre>{item.contents}</pre>
+            <div>{item.votes}</div>
             <ControlContainer>
-              <Button onClick={() => this.setState(state => ({ counter: state.counter + 1 }))}>accomplished</Button>
+              <Button onClick={() => this.voteOnItem(item.name)}>accomplished</Button>
               <Button>unaccomplished</Button>
             </ControlContainer>
           </div>
