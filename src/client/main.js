@@ -52,8 +52,12 @@ export default class Main extends Component {
   componentDidMount() {
     this.setState({ isClient: true });
   }
-  async voteOnItem(name) {
-    await fetch(`/api/votes/${name}`, { method: "post" });
+  async voteOnItem(name, upvote) {
+    await fetch(`/api/votes/${name}`, {
+      method: "post",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ upvote })
+    });
     this.setState({ items: await fetch("/api/items").then(r => r.json()) });
   }
   render() {
@@ -63,10 +67,11 @@ export default class Main extends Component {
         {this.state.items.map((item, i) => (
           <div key={i}>
             <pre>{item.contents}</pre>
-            <div>{item.votes}</div>
+            <div>{item.upvotes}</div>/
+            <div>{item.downvotes}</div>
             <ControlContainer>
-              <Button onClick={() => this.voteOnItem(item.name)}>accomplished</Button>
-              <Button>unaccomplished</Button>
+              <Button onClick={() => this.voteOnItem(item.name, true)}>accomplished</Button>
+              <Button onClick={() => this.voteOnItem(item.name, false)}>unaccomplished</Button>
             </ControlContainer>
           </div>
         ))}
