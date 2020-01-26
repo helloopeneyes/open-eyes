@@ -15,7 +15,11 @@ dotenv.config();
 
 const app = express();
 
-const session = require("express-session");
+app.set("views", __dirname + "/views");
+app.set("view engine", "hbs");
+
+app.use(express.json());
+app.use(compression());
 
 const sess = {
   secret: process.env.SESSION_SECRET,
@@ -23,12 +27,11 @@ const sess = {
   resave: false,
   saveUninitialized: true
 };
-
 if (app.get("env") === "production") {
   sess.cookie.secure = true;
   // app.set('trust proxy', 1);
 }
-
+const session = require("express-session");
 app.use(session(sess));
 
 const strategy = new Auth0Strategy(
@@ -40,19 +43,13 @@ const strategy = new Auth0Strategy(
   },
   (accessToken, refreshToken, extraParams, profile, done) => done(null, profile)
 );
+
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
-
 passport.use(strategy);
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-app.set("views", __dirname + "/views");
-app.set("view engine", "hbs");
-
-app.use(express.json());
-app.use(compression());
 
 if (app.get("env") === "development") {
   const compiler = webpack(webpackConfig);
