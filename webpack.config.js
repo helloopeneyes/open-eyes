@@ -1,5 +1,5 @@
 module.exports = {
-  mode: "production",//process.env.NODE_ENV === "production" ? "production" : "development",
+  mode: process.env.NODE_ENV === "production" ? "production" : "development",
   entry: __dirname + "/src/client/index.js",
   output: { filename: "bundle.js" },
   module: {
