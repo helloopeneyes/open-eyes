@@ -64,11 +64,17 @@ export default class Main extends Component {
     const { isClient } = this.state;
     return (
       <ClientContext.Provider value={isClient}>
+        {this.props.email ? (
+          <div>
+            Logged in as {this.props.email}. <a href="/logout">Log out</a>
+          </div>
+        ) : (
+          <a href="/login">Log in</a>
+        )}
         {this.state.items.map((item, i) => (
           <div key={i}>
             <pre>{item.contents}</pre>
-            <div>{item.upvotes}</div>/
-            <div>{item.downvotes}</div>
+            <div>{item.upvotes}</div>/<div>{item.downvotes}</div>
             <ControlContainer>
               <Button onClick={() => this.voteOnItem(item.name, true)}>accomplished</Button>
               <Button onClick={() => this.voteOnItem(item.name, false)}>unaccomplished</Button>
