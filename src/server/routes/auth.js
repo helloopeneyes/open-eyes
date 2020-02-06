@@ -4,6 +4,9 @@ import dotenv from "dotenv";
 import url from "url";
 import querystring from "querystring";
 
+import db from "../db.js";
+import { getUserEmail } from "../utils.js";
+
 dotenv.config();
 
 const router = express.Router();
@@ -20,6 +23,8 @@ router.get("/callback", (req, res, next) => {
 
     req.logIn(user, err => {
       if (err) return next(err);
+
+      db.ensureUser(getUserEmail(user));
 
       const returnTo = req.session.returnTo;
       delete req.session.returnTo;

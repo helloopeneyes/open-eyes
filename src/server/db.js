@@ -1,7 +1,10 @@
 import { promises as fs } from "fs";
 import knex from "knex";
+import dotenv from "dotenv";
 
 import knexConfig from "./knexfile.js";
+
+dotenv.config();
 
 const db = knex(knexConfig);
 
@@ -10,7 +13,7 @@ async function getItems() {
     .from("votes")
     .count({ count: "item" })
     .select("item")
-    .where("upvote", "=", true)
+    .where({ upvote: true })
     .groupBy("item")
     .then();
 
@@ -18,7 +21,7 @@ async function getItems() {
     .from("votes")
     .count({ count: "item" })
     .select("item")
-    .where("upvote", "=", false)
+    .where({ upvote: false })
     .groupBy("item")
     .then();
 
@@ -53,11 +56,61 @@ async function getItems() {
   );
 }
 
-function vote(item, upvote) {
-  return db
-    .insert({ item, upvote })
-    .into("votes")
-    .return();
+function getIdentifier(email) {
+  return crypto
+    .createHash("sha256")
+    .update(
+      crypto
+        .createHash("sha256")
+        .update(email + process.env.BASE_SECRET)
+        .digest()
+    )
+    .digest("base64");
 }
 
-export default { getItems, vote };
+async function getUserIdForEmail(email) {
+  const identifier = getIdentifier(email);
+  const user = await db
+    .from("users")
+    .where({ identifier })
+    .first("id")
+    .then();
+  return user.id;
+}
+
+async function vote(item, upvote, email) {
+  const user_id = await getUserIdForEmail(email);
+  const existing = await db
+    .from("votes")
+    .where({ item, user_id })
+    .first();
+  if (existing) {
+    return db("votes")
+      .update({ upvote })
+      .where({ item, user_id })
+      .return();
+  } else {
+    return db
+      .insert({ item, upvote, user_id })
+      .into("votes")
+      .return();
+  }
+}
+
+async function ensureUser(email) {
+  const identifier = getIdentifier(email);
+  const user = await db
+    .from("users")
+    .where({ identifier })
+    .first()
+    .then();
+  if (!user) {
+    return await db
+      .insert({ identifier })
+      .into("users")
+      .return();
+  }
+  return user;
+}
+
+export default { getItems, vote, ensureUser };

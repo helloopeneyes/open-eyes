@@ -4,13 +4,14 @@ import ReactDOMServer from "react-dom/server.js";
 import { ServerStyleSheet } from "styled-components";
 
 import db from "../db.js";
+import { getUserEmail } from "../utils.js";
 import Main from "../../client/main.js";
 
 const router = express.Router();
 export default router;
 
 router.get("/", async (req, res) => {
-  const email = req.user && req.user.emails && req.user.emails.length && req.user.emails[0].value;
+  const email = getUserEmail(req.user);
   const initialState = { email, items: await db.getItems() };
 
   const styles = new ServerStyleSheet();
