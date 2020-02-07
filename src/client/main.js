@@ -60,6 +60,10 @@ export default class Main extends Component {
     });
     this.setState({ items: await fetch("/api/items").then(r => r.json()) });
   }
+  async deleteVote(name) {
+    await fetch(`/api/votes/${name}`, { method: "delete" });
+    this.setState({ items: await fetch("/api/items").then(r => r.json()) });
+  }
   render() {
     const { isClient } = this.state;
     return (
@@ -78,6 +82,7 @@ export default class Main extends Component {
             <ControlContainer>
               <Button onClick={() => this.voteOnItem(item.name, true)}>accomplished</Button>
               <Button onClick={() => this.voteOnItem(item.name, false)}>unaccomplished</Button>
+              <Button onClick={() => this.deleteVote(item.name)}>don't know</Button>
             </ControlContainer>
           </div>
         ))}

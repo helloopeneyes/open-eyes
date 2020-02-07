@@ -97,6 +97,13 @@ async function vote(item, upvote, email) {
   }
 }
 
+async function deleteVote(item, email) {
+  const user_id = await getUserIdForEmail(email);
+  await db("votes")
+    .where({ item, user_id })
+    .delete();
+}
+
 async function ensureUser(email) {
   const identifier = getIdentifier(email);
   const user = await db
@@ -113,4 +120,4 @@ async function ensureUser(email) {
   return user;
 }
 
-export default { getItems, vote, ensureUser };
+export default { getItems, vote, deleteVote, ensureUser };

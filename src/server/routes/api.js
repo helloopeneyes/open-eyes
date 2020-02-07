@@ -18,3 +18,12 @@ router.post("/api/votes/:item", async (req, res) => {
   await db.vote(req.params.item, req.body.upvote, getUserEmail(req.user));
   res.send("");
 });
+
+router.delete("/api/votes/:item", async (req, res) => {
+  if (!req.user) {
+    res.sendStatus(401);
+    return;
+  }
+  await db.deleteVote(req.params.item, getUserEmail(req.user));
+  res.send("");
+});
