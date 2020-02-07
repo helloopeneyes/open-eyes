@@ -43,6 +43,22 @@ const ControlContainer = styled.div`
   display: flex;
 `;
 
+const Item = styled(({ className, item, voteOnItem, deleteVote }) => {
+  return (
+    <div className={className}>
+      <pre>{item.contents}</pre>
+      <div>{item.upvotes}</div>/<div>{item.downvotes}</div>
+      <ControlContainer>
+        <Button onClick={() => voteOnItem(item.name, true)}>accomplished</Button>
+        <Button onClick={() => voteOnItem(item.name, false)}>unaccomplished</Button>
+        <Button onClick={() => deleteVote(item.name)}>don&apos;t know</Button>
+      </ControlContainer>
+    </div>
+  );
+})``;
+
+const MIN_VOTES = 2;
+
 export default class Main extends Component {
   state = { items: [], isClient: false };
   constructor(props) {
@@ -52,20 +68,27 @@ export default class Main extends Component {
   componentDidMount() {
     this.setState({ isClient: true });
   }
-  async voteOnItem(name, upvote) {
+  voteOnItem = async (name, upvote) => {
     await fetch(`/api/votes/${name}`, {
       method: "post",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ upvote })
     });
     this.setState({ items: await fetch("/api/items").then(r => r.json()) });
-  }
-  async deleteVote(name) {
+  };
+  deleteVote = async name => {
     await fetch(`/api/votes/${name}`, { method: "delete" });
     this.setState({ items: await fetch("/api/items").then(r => r.json()) });
-  }
+  };
   render() {
     const { isClient } = this.state;
+    const accomplished = this.state.items.filter(
+      item => item.upvotes + item.downvotes >= MIN_VOTES && item.upvotes / (item.upvotes + item.downvotes) >= 0.5
+    );
+    const unAccomplished = this.state.items.filter(
+      item => item.upvotes + item.downvotes >= MIN_VOTES && item.upvotes / (item.upvotes + item.downvotes) < 0.5
+    );
+    const needsVotes = this.state.items.filter(item => item.upvotes + item.downvotes < MIN_VOTES);
     return (
       <ClientContext.Provider value={isClient}>
         {this.props.email ? (
@@ -75,16 +98,17 @@ export default class Main extends Component {
         ) : (
           <a href="/login">Log in</a>
         )}
-        {this.state.items.map((item, i) => (
-          <div key={i}>
-            <pre>{item.contents}</pre>
-            <div>{item.upvotes}</div>/<div>{item.downvotes}</div>
-            <ControlContainer>
-              <Button onClick={() => this.voteOnItem(item.name, true)}>accomplished</Button>
-              <Button onClick={() => this.voteOnItem(item.name, false)}>unaccomplished</Button>
-              <Button onClick={() => this.deleteVote(item.name)}>don't know</Button>
-            </ControlContainer>
-          </div>
+        <h2>Accomplished</h2>
+        {accomplished.map((item, i) => (
+          <Item key={i} item={item} voteOnItem={this.voteOnItem} deleteVote={this.deleteVote} />
+        ))}
+        <h2>Unaccomplished</h2>
+        {unAccomplished.map((item, i) => (
+          <Item key={i} item={item} voteOnItem={this.voteOnItem} deleteVote={this.deleteVote} />
+        ))}
+        <h2>Needs Votes</h2>
+        {needsVotes.map((item, i) => (
+          <Item key={i} item={item} voteOnItem={this.voteOnItem} deleteVote={this.deleteVote} />
         ))}
       </ClientContext.Provider>
     );
