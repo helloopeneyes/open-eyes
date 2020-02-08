@@ -1,3 +1,4 @@
 node_modules/
 src/server/open-eyes.db
 .env
+connect-session-knex.sqlite

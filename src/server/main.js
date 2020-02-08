@@ -5,6 +5,8 @@ import compression from "compression";
 import dotenv from "dotenv";
 import passport from "passport";
 import Auth0Strategy from "passport-auth0";
+import session from "express-session";
+import knexSession from "connect-session-knex";
 
 import indexRouter from "./routes/index.js";
 import authRouter from "./routes/auth.js";
@@ -21,17 +23,19 @@ app.set("view engine", "hbs");
 app.use(express.json());
 app.use(compression());
 
+const KnexSession = knexSession(session);
+const sessionStore = new KnexSession();
 const sess = {
   secret: process.env.SESSION_SECRET,
   cookie: {},
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
+  store: sessionStore
 };
 if (app.get("env") === "production") {
   sess.cookie.secure = true;
   // app.set('trust proxy', 1);
 }
-const session = require("express-session");
 app.use(session(sess));
 
 const strategy = new Auth0Strategy(

@@ -27,11 +27,12 @@ async function getItems() {
 
   const votesFromItem = {};
   for (const votes of upvotes) {
-    votesFromItem[votes.item] = { upvotes: votes.count, downvotes: 0 };
+    votesFromItem[votes.item] = { upvotes: votes.count, downvotes: 0, totalvotes: votes.count };
   }
   for (const votes of downvotes) {
     if (!votesFromItem[votes.item]) votesFromItem[votes.item] = { upvotes: 0, downvotes: 0 };
     votesFromItem[votes.item].downvotes = votes.count;
+    votesFromItem[votes.item].totalvotes = votesFromItem[votes.item].upvotes + votes.count;
   }
 
   const items = await fs.readdir(__dirname + "/items");
@@ -50,7 +51,8 @@ async function getItems() {
           name,
           contents,
           upvotes: (votesFromItem[name] && votesFromItem[name].upvotes) || 0,
-          downvotes: (votesFromItem[name] && votesFromItem[name].downvotes) || 0
+          downvotes: (votesFromItem[name] && votesFromItem[name].downvotes) || 0,
+          totalvotes: (votesFromItem[name] && votesFromItem[name].totalvotes) || 0
         };
       })
   );

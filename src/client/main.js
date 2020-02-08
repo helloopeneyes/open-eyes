@@ -57,7 +57,12 @@ const Item = styled(({ className, item, voteOnItem, deleteVote }) => {
   );
 })``;
 
-const MIN_VOTES = 2;
+const Summary = styled.p`
+  font-size: 20pt;
+  font-weight: bold;
+`;
+
+const MIN_VOTES = 3;
 
 export default class Main extends Component {
   state = { items: [], isClient: false };
@@ -83,12 +88,15 @@ export default class Main extends Component {
   render() {
     const { isClient } = this.state;
     const accomplished = this.state.items.filter(
-      item => item.upvotes + item.downvotes >= MIN_VOTES && item.upvotes / (item.upvotes + item.downvotes) >= 0.5
+      item => item.totalvotes >= MIN_VOTES && item.upvotes / item.totalvotes >= 0.5
     );
     const unAccomplished = this.state.items.filter(
-      item => item.upvotes + item.downvotes >= MIN_VOTES && item.upvotes / (item.upvotes + item.downvotes) < 0.5
+      item => item.totalvotes >= MIN_VOTES && item.upvotes / item.totalvotes < 0.5
     );
-    const needsVotes = this.state.items.filter(item => item.upvotes + item.downvotes < MIN_VOTES);
+    const needsVotes = this.state.items.filter(item => item.totalvotes < MIN_VOTES);
+    const renderItem = (item, i) => (
+      <Item key={i} item={item} voteOnItem={this.voteOnItem} deleteVote={this.deleteVote} />
+    );
     return (
       <ClientContext.Provider value={isClient}>
         {this.props.email ? (
@@ -98,18 +106,15 @@ export default class Main extends Component {
         ) : (
           <a href="/login">Log in</a>
         )}
+        <Summary>
+          Accomplished {accomplished.length} of {this.state.items.length}
+        </Summary>
         <h2>Accomplished</h2>
-        {accomplished.map((item, i) => (
-          <Item key={i} item={item} voteOnItem={this.voteOnItem} deleteVote={this.deleteVote} />
-        ))}
+        {accomplished.map(renderItem)}
         <h2>Unaccomplished</h2>
-        {unAccomplished.map((item, i) => (
-          <Item key={i} item={item} voteOnItem={this.voteOnItem} deleteVote={this.deleteVote} />
-        ))}
+        {unAccomplished.map(renderItem)}
         <h2>Needs Votes</h2>
-        {needsVotes.map((item, i) => (
-          <Item key={i} item={item} voteOnItem={this.voteOnItem} deleteVote={this.deleteVote} />
-        ))}
+        {needsVotes.map(renderItem)}
       </ClientContext.Provider>
     );
   }
