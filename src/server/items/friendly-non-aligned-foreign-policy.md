@@ -9,4 +9,4 @@ will be entered into by our government. Our foreign policy will
 be based on non-alignment and mutual friendship and trust
 among nations.
 
-key-policy,foreign-policy
+key policy, foreign policy
