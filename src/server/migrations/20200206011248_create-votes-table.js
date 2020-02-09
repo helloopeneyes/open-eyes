@@ -10,6 +10,7 @@ exports.up = function(knex) {
       .inTable("users")
       .notNullable();
 
+    table.index(["user_id"]);
     table.index(["item", "upvote"]);
     table.unique(["item", "user_id"]);
   });

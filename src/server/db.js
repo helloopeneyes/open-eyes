@@ -8,7 +8,29 @@ dotenv.config();
 
 const db = knex(knexConfig);
 
-async function getItems() {
+function getIdentifier(email) {
+  return crypto
+    .createHash("sha256")
+    .update(
+      crypto
+        .createHash("sha256")
+        .update(email + process.env.BASE_SECRET)
+        .digest()
+    )
+    .digest("base64");
+}
+
+async function getUserIdForEmail(email) {
+  const identifier = getIdentifier(email);
+  const user = await db
+    .from("users")
+    .where({ identifier })
+    .first("id")
+    .then();
+  return user && user.id;
+}
+
+async function getItems(email) {
   const upvotes = await db
     .from("votes")
     .count({ count: "item" })
@@ -24,6 +46,22 @@ async function getItems() {
     .where({ upvote: false })
     .groupBy("item")
     .then();
+
+  const user_id = await getUserIdForEmail(email);
+
+  let userVotesFromItem = {};
+  if (user_id) {
+    const userVotes = await db
+      .from("votes")
+      .select("item", "upvote")
+      .where({ user_id });
+    userVotesFromItem = userVotes.reduce((acc, vote) => {
+      const { item } = vote;
+      delete vote.item;
+      acc[item] = vote;
+      return acc;
+    }, {});
+  }
 
   const votesFromItem = {};
   for (const votes of upvotes) {
@@ -52,32 +90,11 @@ async function getItems() {
           contents,
           upvotes: (votesFromItem[name] && votesFromItem[name].upvotes) || 0,
           downvotes: (votesFromItem[name] && votesFromItem[name].downvotes) || 0,
-          totalvotes: (votesFromItem[name] && votesFromItem[name].totalvotes) || 0
+          totalvotes: (votesFromItem[name] && votesFromItem[name].totalvotes) || 0,
+          userVote: userVotesFromItem[name] || { upvote: null }
         };
       })
   );
-}
-
-function getIdentifier(email) {
-  return crypto
-    .createHash("sha256")
-    .update(
-      crypto
-        .createHash("sha256")
-        .update(email + process.env.BASE_SECRET)
-        .digest()
-    )
-    .digest("base64");
-}
-
-async function getUserIdForEmail(email) {
-  const identifier = getIdentifier(email);
-  const user = await db
-    .from("users")
-    .where({ identifier })
-    .first("id")
-    .then();
-  return user.id;
 }
 
 async function vote(item, upvote, email) {

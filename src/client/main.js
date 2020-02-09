@@ -17,13 +17,13 @@ const SimpleButton = styled(SkeletonButton)`
   box-sizing: border-box;
 `;
 
-const Button = styled(({ className, children, onClick }) => {
+const Button = styled(({ className, children, disabled, onClick }) => {
   return (
     <ClientContext.Consumer>
       {isClient => (
         <div className={className}>
           {isClient ? (
-            <SimpleButton as="button" onClick={onClick}>
+            <SimpleButton as="button" onClick={onClick} disabled={disabled}>
               {children}
             </SimpleButton>
           ) : (
@@ -47,11 +47,19 @@ const Item = styled(({ className, item, voteOnItem, deleteVote }) => {
   return (
     <div className={className}>
       <pre>{item.contents}</pre>
-      <div>{item.upvotes}</div>/<div>{item.downvotes}</div>
+      <p>
+        {item.upvotes} of {item.totalvotes} users have marked this item as accomplished
+      </p>
       <ControlContainer>
-        <Button onClick={() => voteOnItem(item.name, true)}>accomplished</Button>
-        <Button onClick={() => voteOnItem(item.name, false)}>unaccomplished</Button>
-        <Button onClick={() => deleteVote(item.name)}>don&apos;t know</Button>
+        <Button onClick={() => voteOnItem(item.name, true)} disabled={item.userVote.upvote === 1}>
+          accomplished
+        </Button>
+        <Button onClick={() => voteOnItem(item.name, false)} disabled={item.userVote.upvote === 0}>
+          unaccomplished
+        </Button>
+        <Button onClick={() => deleteVote(item.name)} disabled={item.userVote.upvote === null}>
+          remove vote
+        </Button>
       </ControlContainer>
     </div>
   );

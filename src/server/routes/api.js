@@ -7,7 +7,7 @@ const router = express.Router();
 export default router;
 
 router.get("/api/items", async (req, res) => {
-  res.send(await db.getItems());
+  res.send(await db.getItems(getUserEmail(req.user)));
 });
 
 router.post("/api/votes/:item", async (req, res) => {

@@ -12,7 +12,7 @@ export default router;
 
 router.get("/", async (req, res) => {
   const email = getUserEmail(req.user);
-  const initialState = { email, items: await db.getItems() };
+  const initialState = { email, items: await db.getItems(email) };
 
   const styles = new ServerStyleSheet();
   const reactRoot = ReactDOMServer.renderToString(styles.collectStyles(React.createElement(Main, initialState)));
