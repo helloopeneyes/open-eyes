@@ -73,10 +73,10 @@ const Summary = styled.p`
 const MIN_VOTES = 3;
 
 export default class Main extends Component {
-  state = { items: [], isClient: false };
   constructor(props) {
     super(props);
-    this.state.items = props.items || [];
+    this.state = {};
+    Object.assign(this.state, props);
   }
   componentDidMount() {
     this.setState({ isClient: true });
@@ -105,6 +105,9 @@ export default class Main extends Component {
     const renderItem = (item, i) => (
       <Item key={i} item={item} voteOnItem={this.voteOnItem} deleteVote={this.deleteVote} />
     );
+    const formatMonths = (start, end) => {
+      return Math.floor((end - start) / 1000 / 60 / 60 / 24 / 30);
+    };
     return (
       <ClientContext.Provider value={isClient}>
         {this.props.email ? (
@@ -117,6 +120,13 @@ export default class Main extends Component {
         <Summary>
           Accomplished {accomplished.length} of {this.state.items.length}
         </Summary>
+        <div>
+          <pre>{this.state.meta.content}</pre>
+          <p>
+            {Math.floor(formatMonths(new Date(this.state.meta.startDate), new Date()))} months since term started.{" "}
+            {Math.ceil(formatMonths(new Date(), new Date(this.state.meta.endDate)))} months remaining.
+          </p>
+        </div>
         <h2>Accomplished</h2>
         {accomplished.map(renderItem)}
         <h2>Unaccomplished</h2>

@@ -77,7 +77,7 @@ async function getItems(email) {
 
   return await Promise.all(
     items
-      .filter(filename => filename.endsWith(".md"))
+      .filter(filename => filename.endsWith(".md") && filename !== "meta.md")
       .map(async filename => {
         const contents = await fs.readFile(__dirname + "/items/" + filename, "utf8");
         const name = filename
