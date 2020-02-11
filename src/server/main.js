@@ -61,7 +61,8 @@ if (app.get("env") === "development") {
 }
 
 app.use("/", indexRouter);
-app.use("/", apiRouter);
+app.use("/api", apiRouter);
 app.use("/", authRouter);
+app.use("/assets", express.static(__dirname + "/../client/assets"));
 
 app.listen(3000);

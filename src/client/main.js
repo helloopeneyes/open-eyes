@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import styled from "styled-components";
+import styled, { createGlobalStyle } from "styled-components";
 
 const ClientContext = React.createContext(false);
 
@@ -43,10 +43,22 @@ const ControlContainer = styled.div`
   display: flex;
 `;
 
+const Label = styled.a`
+  border: 1px solid black;
+`;
+
+const ItemTitle = styled.h3`
+  display: inline;
+`;
+
 const Item = styled(({ className, item, voteOnItem, deleteVote }) => {
   return (
     <div className={className}>
-      <pre>{item.contents}</pre>
+      <ItemTitle>{item.title}</ItemTitle>
+      {item.labels.map((label, i) => (
+        <Label key={i}>{label}</Label>
+      ))}
+      <p>{item.contents}</p>
       <p>
         {item.upvotes} of {item.totalvotes} users have marked this item as accomplished
       </p>
@@ -63,11 +75,53 @@ const Item = styled(({ className, item, voteOnItem, deleteVote }) => {
       </ControlContainer>
     </div>
   );
-})``;
+})`
+  margin: 1em 0;
+`;
+
+const GlobalStyle = createGlobalStyle`
+  html, body {
+    margin: 0;
+  }
+`;
+
+const Centered = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const Root = styled(Centered)`
+  font-family: sans-serif;
+`;
+
+const Header = styled.div`
+  width: 100%;
+  text-align: right;
+  display: flex;
+  align-items: center;
+  background: #f2f2f2;
+`;
+
+const Logo = styled.img`
+  height: 50px;
+`;
+
+const LogIn = styled.span`
+  flex: 1;
+`;
+
+const Meta = styled(Centered)`
+  margin: 1em 0;
+`;
 
 const Summary = styled.p`
   font-size: 20pt;
   font-weight: bold;
+`;
+
+const Hr = styled.hr`
+  width: 100%;
 `;
 
 const MIN_VOTES = 3;
@@ -110,29 +164,50 @@ export default class Main extends Component {
     };
     return (
       <ClientContext.Provider value={isClient}>
-        {this.props.email ? (
-          <div>
-            Logged in as {this.props.email}. <a href="/logout">Log out</a>
-          </div>
-        ) : (
-          <a href="/login">Log in</a>
-        )}
-        <Summary>
-          Accomplished {accomplished.length} of {this.state.items.length}
-        </Summary>
-        <div>
-          <pre>{this.state.meta.content}</pre>
-          <p>
-            {Math.floor(formatMonths(new Date(this.state.meta.startDate), new Date()))} months since term started.{" "}
-            {Math.ceil(formatMonths(new Date(), new Date(this.state.meta.endDate)))} months remaining.
-          </p>
-        </div>
-        <h2>Accomplished</h2>
-        {accomplished.map(renderItem)}
-        <h2>Unaccomplished</h2>
-        {unAccomplished.map(renderItem)}
-        <h2>Needs Votes</h2>
-        {needsVotes.map(renderItem)}
+        <GlobalStyle />
+        <Root>
+          <Header>
+            <Logo src="assets/logo.svg" alt="Open Eyes logo" />
+            <LogIn>
+              {this.props.email ? (
+                <span>
+                  Logged in as {this.props.email}. <a href="/logout">Log out</a>
+                </span>
+              ) : (
+                <a href="/login">Log in</a>
+              )}
+            </LogIn>
+          </Header>
+          <Meta>
+            <p>{this.state.meta.content}</p>
+            <Summary>
+              Accomplished {accomplished.length} of {this.state.items.length}
+            </Summary>
+            <p>
+              {Math.floor(formatMonths(new Date(this.state.meta.startDate), new Date()))} months since term started.{" "}
+              {Math.ceil(formatMonths(new Date(), new Date(this.state.meta.endDate)))} months remaining.
+            </p>
+          </Meta>
+          <Hr />
+          {!!needsVotes.length && (
+            <>
+              <h2>Needs Votes</h2>
+              {needsVotes.map(renderItem)}
+            </>
+          )}
+          {!!accomplished.length && (
+            <>
+              <h2>Accomplished</h2>
+              {accomplished.map(renderItem)}
+            </>
+          )}
+          {!!unAccomplished.length && (
+            <>
+              <h2>Unaccomplished</h2>
+              {unAccomplished.map(renderItem)}
+            </>
+          )}
+        </Root>
       </ClientContext.Provider>
     );
   }

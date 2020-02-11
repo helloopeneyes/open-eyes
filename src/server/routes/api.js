@@ -6,11 +6,11 @@ import { getUserEmail } from "../utils.js";
 const router = express.Router();
 export default router;
 
-router.get("/api/items", async (req, res) => {
+router.get("/items", async (req, res) => {
   res.send(await db.getItems(getUserEmail(req.user)));
 });
 
-router.post("/api/votes/:item", async (req, res) => {
+router.post("/votes/:item", async (req, res) => {
   if (!req.user) {
     res.sendStatus(401);
     return;
@@ -19,7 +19,7 @@ router.post("/api/votes/:item", async (req, res) => {
   res.send("");
 });
 
-router.delete("/api/votes/:item", async (req, res) => {
+router.delete("/votes/:item", async (req, res) => {
   if (!req.user) {
     res.sendStatus(401);
     return;

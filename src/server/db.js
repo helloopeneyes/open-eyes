@@ -79,7 +79,11 @@ async function getItems(email) {
     items
       .filter(filename => filename.endsWith(".md") && filename !== "meta.md")
       .map(async filename => {
-        const contents = await fs.readFile(__dirname + "/items/" + filename, "utf8");
+        const lines = (await fs.readFile(__dirname + "/items/" + filename, "utf8")).trim().split("\n");
+        const title = lines[0];
+        const contents = lines.slice(1, -1).join("\n");
+        const labels = lines[lines.length - 1].split(",").map(label => label.trim());
+
         const name = filename
           .split(".")
           .slice(0, -1)
@@ -87,7 +91,9 @@ async function getItems(email) {
 
         return {
           name,
+          title,
           contents,
+          labels,
           upvotes: (votesFromItem[name] && votesFromItem[name].upvotes) || 0,
           downvotes: (votesFromItem[name] && votesFromItem[name].downvotes) || 0,
           totalvotes: (votesFromItem[name] && votesFromItem[name].totalvotes) || 0,
