@@ -39,8 +39,9 @@ const Button = styled(({ className, children, disabled, onClick }) => {
 `;
 
 const ControlContainer = styled.div`
-  height: 2em;
   display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 
 const Label = styled.a`
@@ -76,12 +77,13 @@ const Item = styled(({ className, item, voteOnItem, deleteVote }) => {
     </div>
   );
 })`
-  margin: 1em 0;
+  margin: 2em 0;
 `;
 
 const GlobalStyle = createGlobalStyle`
   html, body {
     margin: 0;
+    width: 100%;
   }
 `;
 
@@ -96,7 +98,9 @@ const Root = styled(Centered)`
 `;
 
 const Header = styled.div`
+  padding: 0 1em;
   width: 100%;
+  box-sizing: border-box;
   text-align: right;
   display: flex;
   align-items: center;
@@ -111,6 +115,14 @@ const LogIn = styled.span`
   flex: 1;
 `;
 
+const Email = styled.span`
+  font-size: 10pt;
+`;
+
+const Content = styled(Centered)`
+  padding: 0 1em;
+`;
+
 const Meta = styled(Centered)`
   margin: 1em 0;
 `;
@@ -122,6 +134,8 @@ const Summary = styled.p`
 
 const Hr = styled.hr`
   width: 100%;
+  border-left: 0;
+  border-right: 0;
 `;
 
 const MIN_VOTES = 3;
@@ -171,42 +185,50 @@ export default class Main extends Component {
             <LogIn>
               {this.props.email ? (
                 <span>
-                  Logged in as {this.props.email}. <a href="/logout">Log out</a>
+                  <Email title={this.props.email}>{this.props.email}</Email> <a href="/logout">Log out</a>
                 </span>
               ) : (
                 <a href="/login">Log in</a>
               )}
             </LogIn>
           </Header>
-          <Meta>
-            <p>{this.state.meta.content}</p>
-            <Summary>
-              Accomplished {accomplished.length} of {this.state.items.length}
-            </Summary>
-            <p>
-              {Math.floor(formatMonths(new Date(this.state.meta.startDate), new Date()))} months since term started.{" "}
-              {Math.ceil(formatMonths(new Date(), new Date(this.state.meta.endDate)))} months remaining.
-            </p>
-          </Meta>
-          <Hr />
-          {!!needsVotes.length && (
-            <>
-              <h2>Needs Votes</h2>
-              {needsVotes.map(renderItem)}
-            </>
-          )}
-          {!!accomplished.length && (
-            <>
-              <h2>Accomplished</h2>
-              {accomplished.map(renderItem)}
-            </>
-          )}
-          {!!unAccomplished.length && (
-            <>
-              <h2>Unaccomplished</h2>
-              {unAccomplished.map(renderItem)}
-            </>
-          )}
+          <Content>
+            <Meta>
+              <p>{this.state.meta.content}</p>
+              <Summary>
+                <a href="#needsVotes">Needs Votes</a>: {accomplished.length} of {this.state.items.length}
+              </Summary>
+              <Summary>
+                <a href="#accomplished">Accomplished</a>: {accomplished.length} of {this.state.items.length}
+              </Summary>
+              <Summary>
+                <a href="#unaccomplished">Unaccomplished</a>: {accomplished.length} of {this.state.items.length}
+              </Summary>
+              <p>
+                {Math.floor(formatMonths(new Date(this.state.meta.startDate), new Date()))} months since term started.{" "}
+                {Math.ceil(formatMonths(new Date(), new Date(this.state.meta.endDate)))} months remaining.
+              </p>
+            </Meta>
+            <Hr />
+            {!!needsVotes.length && (
+              <>
+                <h2 id="needsVotes">Needs Votes</h2>
+                {needsVotes.map(renderItem)}
+              </>
+            )}
+            {!!accomplished.length && (
+              <>
+                <h2 id="accomplished">Accomplished</h2>
+                {accomplished.map(renderItem)}
+              </>
+            )}
+            {!!unAccomplished.length && (
+              <>
+                <h2 id="unaccomplished">Unaccomplished</h2>
+                {unAccomplished.map(renderItem)}
+              </>
+            )}
+          </Content>
         </Root>
       </ClientContext.Provider>
     );
