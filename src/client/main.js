@@ -52,16 +52,18 @@ const ItemTitle = styled.h3`
   display: inline;
 `;
 
-const Item = styled(({ className, item, voteOnItem, deleteVote }) => {
+const Item = styled(({ className, item, voteOnItem, deleteVote, filterLabel }) => {
   return (
     <div className={className}>
       <ItemTitle>{item.title}</ItemTitle>
       {item.labels.map((label, i) => (
-        <Label key={i}>{label}</Label>
+        <Label key={i} href="#" onClick={() => filterLabel(label)}>
+          {label}
+        </Label>
       ))}
       <p>{item.contents}</p>
       <p>
-        {item.upvotes} of {item.totalvotes} users have marked this item as accomplished
+        {item.upvotes} of {item.totalvotes} people have marked this item as accomplished
       </p>
       <ControlContainer>
         <Button onClick={() => voteOnItem(item.name, true)} disabled={item.userVote.upvote === 1}>
@@ -161,6 +163,9 @@ export default class Main extends Component {
     await fetch(`/api/votes/${name}`, { method: "delete" });
     this.setState({ items: await fetch("/api/items").then(r => r.json()) });
   };
+  filterLabel = async label => {
+    this.setState({ label });
+  };
   render() {
     const { isClient } = this.state;
     const accomplished = this.state.items.filter(
@@ -170,8 +175,25 @@ export default class Main extends Component {
       item => item.totalvotes >= MIN_VOTES && item.upvotes / item.totalvotes < 0.5
     );
     const needsVotes = this.state.items.filter(item => item.totalvotes < MIN_VOTES);
+    const labels = Array.from(
+      this.state.items.reduce((acc, item) => {
+        for (const label of item.labels) {
+          acc.add(label);
+        }
+        return acc;
+      }, new Set())
+    );
+    const filterItems = item => {
+      return !this.state.label || item.labels.includes(this.state.label);
+    };
     const renderItem = (item, i) => (
-      <Item key={i} item={item} voteOnItem={this.voteOnItem} deleteVote={this.deleteVote} />
+      <Item
+        key={i}
+        item={item}
+        voteOnItem={this.voteOnItem}
+        deleteVote={this.deleteVote}
+        filterLabel={this.filterLabel}
+      />
     );
     const formatMonths = (start, end) => {
       return Math.floor((end - start) / 1000 / 60 / 60 / 24 / 30);
@@ -196,13 +218,13 @@ export default class Main extends Component {
             <Meta>
               <p>{this.state.meta.content}</p>
               <Summary>
-                <a href="#needsVotes">Needs Votes</a>: {accomplished.length} of {this.state.items.length}
+                <a href="#needsVotes">Needs Votes</a>: {needsVotes.length} of {this.state.items.length}
               </Summary>
               <Summary>
                 <a href="#accomplished">Accomplished</a>: {accomplished.length} of {this.state.items.length}
               </Summary>
               <Summary>
-                <a href="#unaccomplished">Unaccomplished</a>: {accomplished.length} of {this.state.items.length}
+                <a href="#unaccomplished">Unaccomplished</a>: {unAccomplished.length} of {this.state.items.length}
               </Summary>
               <p>
                 {Math.floor(formatMonths(new Date(this.state.meta.startDate), new Date()))} months since term started.{" "}
@@ -210,22 +232,29 @@ export default class Main extends Component {
               </p>
             </Meta>
             <Hr />
+            <div>
+              {labels.map((label, i) => (
+                <Label key={i} href="#" onClick={() => this.filterLabel(label)}>
+                  {label}
+                </Label>
+              ))}
+            </div>
             {!!needsVotes.length && (
               <>
                 <h2 id="needsVotes">Needs Votes</h2>
-                {needsVotes.map(renderItem)}
+                {needsVotes.filter(filterItems).map(renderItem)}
               </>
             )}
             {!!accomplished.length && (
               <>
                 <h2 id="accomplished">Accomplished</h2>
-                {accomplished.map(renderItem)}
+                {accomplished.filter(filterItems).map(renderItem)}
               </>
             )}
             {!!unAccomplished.length && (
               <>
                 <h2 id="unaccomplished">Unaccomplished</h2>
-                {unAccomplished.map(renderItem)}
+                {unAccomplished.filter(filterItems).map(renderItem)}
               </>
             )}
           </Content>
