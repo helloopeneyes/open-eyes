@@ -40,27 +40,50 @@ const Button = styled(({ className, children, disabled, onClick }) => {
 
 const ControlContainer = styled.div`
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: center;
+  }
 `;
 
-const Label = styled.a`
-  border: 1px solid black;
+function colorFromString(str) {
+  let val = 0;
+  for (const char of Array.from(str)) {
+    val += char.charCodeAt(0);
+  }
+  return `hsl(${val % 360}deg, 70%, 80%)`;
+}
+
+const Label = styled(props => {
+  return (
+    <a {...props} style={{ backgroundColor: colorFromString(props.text) }}>
+      {props.children}
+    </a>
+  );
+})`
+  color: black;
+  text-decoration: none;
+  border-radius: 2px;
+  font-size: 10pt;
+  padding: 0.4em;
+  margin-right: 0.2em;
 `;
 
 const ItemTitle = styled.h3`
-  display: inline;
+  margin-bottom: 0.4em;
 `;
 
 const Item = styled(({ className, item, voteOnItem, deleteVote, filterLabel }) => {
   return (
     <div className={className}>
       <ItemTitle>{item.title}</ItemTitle>
-      {item.labels.map((label, i) => (
-        <Label key={i} href="#" onClick={() => filterLabel(label)}>
-          {label}
-        </Label>
-      ))}
+      <div>
+        {item.labels.map((label, i) => (
+          <Label key={i} text={label} href="#" onClick={() => filterLabel(label)}>
+            {label}
+          </Label>
+        ))}
+      </div>
       <p>{item.contents}</p>
       <p>
         {item.upvotes} of {item.totalvotes} people have marked this item as accomplished
@@ -140,6 +163,10 @@ const Hr = styled.hr`
   border-right: 0;
 `;
 
+const Labels = styled.div`
+  margin: 1em 0;
+`;
+
 const MIN_VOTES = 3;
 
 export default class Main extends Component {
@@ -164,7 +191,14 @@ export default class Main extends Component {
     this.setState({ items: await fetch("/api/items").then(r => r.json()) });
   };
   filterLabel = async label => {
-    this.setState({ label });
+    this.setState(state => {
+      if (state.label === label) {
+        state.label = null;
+      } else {
+        state.label = label;
+      }
+      return state;
+    });
   };
   render() {
     const { isClient } = this.state;
@@ -232,13 +266,14 @@ export default class Main extends Component {
               </p>
             </Meta>
             <Hr />
-            <div>
+            <Labels>
               {labels.map((label, i) => (
-                <Label key={i} href="#" onClick={() => this.filterLabel(label)}>
+                <Label key={i} text={label} href="#" onClick={() => this.filterLabel(label)}>
                   {label}
+                  {this.state.label === label ? " x" : ""}
                 </Label>
               ))}
-            </div>
+            </Labels>
             {!!needsVotes.length && (
               <>
                 <h2 id="needsVotes">Needs Votes</h2>
