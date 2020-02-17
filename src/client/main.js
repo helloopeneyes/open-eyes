@@ -35,7 +35,7 @@ const Button = styled(({ className, children, disabled, onClick }) => {
   );
 })`
   display: inline;
-  margin: 0 0.5em;
+  margin: 0.2em 0.5em;
 `;
 
 const ControlContainer = styled.div`
@@ -61,6 +61,8 @@ const Label = styled(props => {
     </a>
   );
 })`
+  white-space: nowrap;
+  margin-bottom: 0.3em;
   color: black;
   text-decoration: none;
   border-radius: 2px;
@@ -69,25 +71,40 @@ const Label = styled(props => {
   margin-right: 0.2em;
 `;
 
+const Items = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+`;
+
 const ItemTitle = styled.h3`
   margin-bottom: 0.4em;
 `;
 
-const Item = styled(({ className, item, voteOnItem, deleteVote, filterLabel }) => {
+const ItemContents = styled.p`
+  flex: 1;
+`;
+
+const Item = styled(({ className, item, unaccomplished, voteOnItem, deleteVote, filterLabel }) => {
   return (
     <div className={className}>
       <ItemTitle>{item.title}</ItemTitle>
       <div>
         {item.labels.map((label, i) => (
-          <Label key={i} text={label} href="#" onClick={() => filterLabel(label)}>
+          <Label key={i} text={label} href="#" onClick={e => filterLabel(e, label)}>
             {label}
           </Label>
         ))}
       </div>
-      <p>{item.contents}</p>
-      <p>
-        {item.upvotes} of {item.totalvotes} people have marked this item as accomplished
-      </p>
+      <ItemContents>{item.contents}</ItemContents>
+      {unaccomplished ? (
+        <p>
+          {item.downvotes} of {item.totalvotes} people have marked this item as unaccomplished
+        </p>
+      ) : (
+        <p>
+          {item.upvotes} of {item.totalvotes} people have marked this item as accomplished
+        </p>
+      )}
       <ControlContainer>
         <Button onClick={() => voteOnItem(item.name, true)} disabled={item.userVote.upvote === 1}>
           accomplished
@@ -102,7 +119,11 @@ const Item = styled(({ className, item, voteOnItem, deleteVote, filterLabel }) =
     </div>
   );
 })`
+  max-width: 550px;
   margin: 2em 0;
+  padding: 0 1em;
+  display: flex;
+  flex-direction: column;
 `;
 
 const GlobalStyle = createGlobalStyle`
@@ -165,6 +186,8 @@ const Hr = styled.hr`
 
 const Labels = styled.div`
   margin: 1em 0;
+  display: flex;
+  flex-wrap: wrap;
 `;
 
 const MIN_VOTES = 3;
@@ -190,7 +213,8 @@ export default class Main extends Component {
     await fetch(`/api/votes/${name}`, { method: "delete" });
     this.setState({ items: await fetch("/api/items").then(r => r.json()) });
   };
-  filterLabel = async label => {
+  filterLabel = async (e, label) => {
+    e.preventDefault();
     this.setState(state => {
       if (state.label === label) {
         state.label = null;
@@ -220,15 +244,18 @@ export default class Main extends Component {
     const filterItems = item => {
       return !this.state.label || item.labels.includes(this.state.label);
     };
-    const renderItem = (item, i) => (
-      <Item
-        key={i}
-        item={item}
-        voteOnItem={this.voteOnItem}
-        deleteVote={this.deleteVote}
-        filterLabel={this.filterLabel}
-      />
-    );
+    const renderItem = unaccomplished => {
+      return (item, i) => (
+        <Item
+          key={i}
+          item={item}
+          unaccomplished={unaccomplished}
+          voteOnItem={this.voteOnItem}
+          deleteVote={this.deleteVote}
+          filterLabel={this.filterLabel}
+        />
+      );
+    };
     const formatMonths = (start, end) => {
       return Math.floor((end - start) / 1000 / 60 / 60 / 24 / 30);
     };
@@ -237,7 +264,9 @@ export default class Main extends Component {
         <GlobalStyle />
         <Root>
           <Header>
-            <Logo src="assets/logo.svg" alt="Open Eyes logo" />
+            <a href="/">
+              <Logo src="assets/logo.svg" alt="Open Eyes logo" />
+            </a>
             <LogIn>
               {this.props.email ? (
                 <span>
@@ -268,28 +297,28 @@ export default class Main extends Component {
             <Hr />
             <Labels>
               {labels.map((label, i) => (
-                <Label key={i} text={label} href="#" onClick={() => this.filterLabel(label)}>
+                <Label key={i} text={label} href="#" onClick={e => this.filterLabel(e, label)}>
                   {label}
                   {this.state.label === label ? " x" : ""}
                 </Label>
               ))}
             </Labels>
-            {!!needsVotes.length && (
+            {!!needsVotes.filter(filterItems).length && (
               <>
                 <h2 id="needsVotes">Needs Votes</h2>
-                {needsVotes.filter(filterItems).map(renderItem)}
+                <Items>{needsVotes.filter(filterItems).map(renderItem())}</Items>
               </>
             )}
-            {!!accomplished.length && (
+            {!!accomplished.filter(filterItems).length && (
               <>
                 <h2 id="accomplished">Accomplished</h2>
-                {accomplished.filter(filterItems).map(renderItem)}
+                <Items>{accomplished.filter(filterItems).map(renderItem())}</Items>
               </>
             )}
-            {!!unAccomplished.length && (
+            {!!unAccomplished.filter(filterItems).length && (
               <>
                 <h2 id="unaccomplished">Unaccomplished</h2>
-                {unAccomplished.filter(filterItems).map(renderItem)}
+                <Items>{unAccomplished.filter(filterItems).map(renderItem(true))}</Items>
               </>
             )}
           </Content>

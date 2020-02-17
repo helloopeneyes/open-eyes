@@ -1,4 +1,4 @@
-Development of Physical Resources of Physical Resources
+Development of Physical Resources
 
 In order to develop the country it is paramount that we utilize
 every square inch of our country in a productive manner by
