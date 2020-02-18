@@ -56,8 +56,13 @@ function colorFromString(str) {
 
 const Label = styled(props => {
   return (
-    <a {...props} style={{ backgroundColor: colorFromString(props.text) }}>
-      {props.children}
+    <a
+      className={props.className}
+      style={{ backgroundColor: colorFromString(props.label) }}
+      href={props.isCurrentLabel ? `/` : `?label=${props.label}`}
+    >
+      {props.label}
+      {props.isCurrentLabel ? " x" : ""}
     </a>
   );
 })`
@@ -74,6 +79,7 @@ const Label = styled(props => {
 const Items = styled.div`
   display: flex;
   flex-wrap: wrap;
+  width: 100%;
 `;
 
 const ItemTitle = styled.h3`
@@ -84,15 +90,13 @@ const ItemContents = styled.p`
   flex: 1;
 `;
 
-const Item = styled(({ className, item, unaccomplished, voteOnItem, deleteVote, filterLabel }) => {
+const Item = styled(({ className, item, unaccomplished, currentLabel, voteOnItem, deleteVote }) => {
   return (
     <div className={className}>
       <ItemTitle>{item.title}</ItemTitle>
       <div>
         {item.labels.map((label, i) => (
-          <Label key={i} text={label} href="#" onClick={e => filterLabel(e, label)}>
-            {label}
-          </Label>
+          <Label key={i} label={label} isCurrentLabel={currentLabel === label} />
         ))}
       </div>
       <ItemContents>{item.contents}</ItemContents>
@@ -144,9 +148,9 @@ const Root = styled(Centered)`
 `;
 
 const Header = styled.div`
-  padding: 0 1em;
   width: 100%;
   box-sizing: border-box;
+  padding: 0 1em;
   text-align: right;
   display: flex;
   align-items: center;
@@ -167,6 +171,8 @@ const Email = styled.span`
 
 const Content = styled(Centered)`
   padding: 0 1em;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const Meta = styled(Centered)`
@@ -174,7 +180,7 @@ const Meta = styled(Centered)`
 `;
 
 const Summary = styled.p`
-  font-size: 20pt;
+  font-size: 14pt;
   font-weight: bold;
 `;
 
@@ -198,9 +204,11 @@ export default class Main extends Component {
     this.state = {};
     Object.assign(this.state, props);
   }
+
   componentDidMount() {
     this.setState({ isClient: true });
   }
+
   voteOnItem = async (name, upvote) => {
     await fetch(`/api/votes/${name}`, {
       method: "post",
@@ -209,21 +217,12 @@ export default class Main extends Component {
     });
     this.setState({ items: await fetch("/api/items").then(r => r.json()) });
   };
+
   deleteVote = async name => {
     await fetch(`/api/votes/${name}`, { method: "delete" });
     this.setState({ items: await fetch("/api/items").then(r => r.json()) });
   };
-  filterLabel = async (e, label) => {
-    e.preventDefault();
-    this.setState(state => {
-      if (state.label === label) {
-        state.label = null;
-      } else {
-        state.label = label;
-      }
-      return state;
-    });
-  };
+
   render() {
     const { isClient } = this.state;
     const accomplished = this.state.items.filter(
@@ -250,9 +249,9 @@ export default class Main extends Component {
           key={i}
           item={item}
           unaccomplished={unaccomplished}
+          currentLabel={this.state.label}
           voteOnItem={this.voteOnItem}
           deleteVote={this.deleteVote}
-          filterLabel={this.filterLabel}
         />
       );
     };
@@ -297,10 +296,7 @@ export default class Main extends Component {
             <Hr />
             <Labels>
               {labels.map((label, i) => (
-                <Label key={i} text={label} href="#" onClick={e => this.filterLabel(e, label)}>
-                  {label}
-                  {this.state.label === label ? " x" : ""}
-                </Label>
+                <Label key={i} label={label} isCurrentLabel={this.state.label === label} />
               ))}
             </Labels>
             {!!needsVotes.filter(filterItems).length && (
