@@ -1,12 +1,15 @@
 import React, { Component } from "react";
-import styled, { createGlobalStyle } from "styled-components";
+import styled from "styled-components";
+
+import { GlobalStyle, Centered, Root, Header, Logo, HeaderLinks, Content } from "./components.js";
 
 const ClientContext = React.createContext(false);
 
 const SkeletonButton = styled.span`
   display: inline-block;
-  width: 150px;
+  width: 130px;
   height: 30px;
+  padding: 0;
   ${props => (props.as === "button" ? "" : "background-color: #eee;")}
 `;
 
@@ -35,15 +38,14 @@ const Button = styled(({ className, children, disabled, onClick }) => {
   );
 })`
   display: inline;
-  margin: 0.2em 0.5em;
+  line-height: 0;
+  margin: 0.2em 0.2em;
 `;
 
 const ControlContainer = styled.div`
   display: flex;
-  @media (max-width: 600px) {
-    flex-direction: column;
-    align-items: center;
-  }
+  flex-wrap: wrap;
+  justify-content: center;
 `;
 
 function colorFromString(str) {
@@ -130,53 +132,12 @@ const Item = styled(({ className, item, unaccomplished, currentLabel, voteOnItem
   flex-direction: column;
 `;
 
-const GlobalStyle = createGlobalStyle`
-  html, body {
-    margin: 0;
-    width: 100%;
-  }
-`;
-
-const Centered = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
-
-const Root = styled(Centered)`
-  font-family: sans-serif;
-`;
-
-const Header = styled.div`
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0 1em;
-  text-align: right;
-  display: flex;
-  align-items: center;
-  background: #f2f2f2;
-`;
-
-const Logo = styled.img`
-  height: 50px;
-`;
-
 const LogIn = styled.span`
   flex: 1;
 `;
 
 const Email = styled.span`
   font-size: 10pt;
-`;
-
-const Content = styled(Centered)`
-  padding: 0 1em;
-  width: 100%;
-  box-sizing: border-box;
-`;
-
-const Meta = styled(Centered)`
-  margin: 1em 0;
 `;
 
 const Summary = styled.p`
@@ -263,9 +224,8 @@ export default class Main extends Component {
         <GlobalStyle />
         <Root>
           <Header>
-            <a href="/">
-              <Logo src="assets/logo.svg" alt="Open Eyes logo" />
-            </a>
+            <Logo />
+            <HeaderLinks />
             <LogIn>
               {this.props.email ? (
                 <span>
@@ -277,7 +237,7 @@ export default class Main extends Component {
             </LogIn>
           </Header>
           <Content>
-            <Meta>
+            <Centered>
               <p>{this.state.meta.content}</p>
               <Summary>
                 <a href="#needsVotes">Needs Votes</a>: {needsVotes.length} of {this.state.items.length}
@@ -292,7 +252,7 @@ export default class Main extends Component {
                 {Math.floor(formatMonths(new Date(this.state.meta.startDate), new Date()))} months since term started.{" "}
                 {Math.ceil(formatMonths(new Date(), new Date(this.state.meta.endDate)))} months remaining.
               </p>
-            </Meta>
+            </Centered>
             <Hr />
             <Labels>
               {labels.map((label, i) => (
@@ -301,18 +261,21 @@ export default class Main extends Component {
             </Labels>
             {!!needsVotes.filter(filterItems).length && (
               <>
+                <Hr />
                 <h2 id="needsVotes">Needs Votes</h2>
                 <Items>{needsVotes.filter(filterItems).map(renderItem())}</Items>
               </>
             )}
             {!!accomplished.filter(filterItems).length && (
               <>
+                <Hr />
                 <h2 id="accomplished">Accomplished</h2>
                 <Items>{accomplished.filter(filterItems).map(renderItem())}</Items>
               </>
             )}
             {!!unAccomplished.filter(filterItems).length && (
               <>
+                <Hr />
                 <h2 id="unaccomplished">Unaccomplished</h2>
                 <Items>{unAccomplished.filter(filterItems).map(renderItem(true))}</Items>
               </>

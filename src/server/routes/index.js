@@ -7,9 +7,19 @@ import { ServerStyleSheet } from "styled-components";
 import db from "../db.js";
 import { getUserEmail } from "../utils.js";
 import Main from "../../client/main.js";
+import About from "../../client/about.js";
 
 const router = express.Router();
 export default router;
+
+router.get("/about", async (req, res) => {
+  const styles = new ServerStyleSheet();
+  const reactRoot = ReactDOMServer.renderToString(styles.collectStyles(React.createElement(About)));
+  const styleTags = styles.getStyleTags();
+  styles.seal();
+
+  res.render("about", { styleTags, reactRoot });
+});
 
 router.get("/", async (req, res) => {
   const email = getUserEmail(req.user);
