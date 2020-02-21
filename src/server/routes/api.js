@@ -1,13 +1,13 @@
 import express from "express";
 
 import db from "../db.js";
-import { getUserEmail } from "../utils.js";
+import { getUserIdentifier } from "../utils.js";
 
 const router = express.Router();
 export default router;
 
 router.get("/items", async (req, res) => {
-  res.send(await db.getItems(getUserEmail(req.user)));
+  res.send(await db.getItems(getUserIdentifier(req.user)));
 });
 
 router.post("/votes/:item", async (req, res) => {
@@ -15,7 +15,7 @@ router.post("/votes/:item", async (req, res) => {
     res.sendStatus(401);
     return;
   }
-  await db.vote(req.params.item, req.body.upvote, getUserEmail(req.user));
+  await db.vote(req.params.item, req.body.upvote, getUserIdentifier(req.user));
   res.send("");
 });
 
@@ -24,6 +24,6 @@ router.delete("/votes/:item", async (req, res) => {
     res.sendStatus(401);
     return;
   }
-  await db.deleteVote(req.params.item, getUserEmail(req.user));
+  await db.deleteVote(req.params.item, getUserIdentifier(req.user));
   res.send("");
 });

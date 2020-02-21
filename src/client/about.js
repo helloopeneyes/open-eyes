@@ -25,10 +25,10 @@ export default function About() {
           </p>
           <h2>Privacy</h2>
           <p>
-            Open Eyes requires you to log in with a Google, Facebook or email address in order to prevent abusers voting
-            for items more than once. Although Open Eyes uses your email address to identify you, it explicitly avoids
-            storing your email address when you log in. Open Eyes obscures the email address before it is stored, in a
-            way that cannot be reversed even if the stored data is compromised.
+            Open Eyes requires you to log in with a Google account, Facebook account or email address in order to
+            prevent abusers voting for items more than once. Although Open Eyes uses your email address to identify you,
+            it explicitly avoids storing your email address when you log in. Open Eyes obscures the email address before
+            it is stored, in a way that cannot be reversed even if the stored data is compromised.
           </p>
         </AboutContent>
       </Content>

@@ -8,29 +8,29 @@ dotenv.config();
 
 const db = knex(knexConfig);
 
-function getIdentifier(email) {
+function getHashedIdentifier(identifier) {
   return crypto
     .createHash("sha256")
     .update(
       crypto
         .createHash("sha256")
-        .update(email + process.env.BASE_SECRET)
+        .update(identifier + process.env.BASE_SECRET)
         .digest()
     )
     .digest("base64");
 }
 
-async function getUserIdForEmail(email) {
-  const identifier = getIdentifier(email);
+async function getUserIdForIdentifier(identifier) {
+  const hashedIdentifier = getHashedIdentifier(identifier);
   const user = await db
     .from("users")
-    .where({ identifier })
+    .where({ identifier: hashedIdentifier })
     .first("id")
     .then();
   return user && user.id;
 }
 
-async function getItems(email) {
+async function getItems(identifier) {
   const upvotes = await db
     .from("votes")
     .count({ count: "item" })
@@ -47,7 +47,7 @@ async function getItems(email) {
     .groupBy("item")
     .then();
 
-  const user_id = await getUserIdForEmail(email);
+  const user_id = await getUserIdForIdentifier(identifier);
 
   let userVotesFromItem = {};
   if (user_id) {
@@ -103,8 +103,8 @@ async function getItems(email) {
   );
 }
 
-async function vote(item, upvote, email) {
-  const user_id = await getUserIdForEmail(email);
+async function vote(item, upvote, identifier) {
+  const user_id = await getUserIdForIdentifier(identifier);
   const existing = await db
     .from("votes")
     .where({ item, user_id })
@@ -122,23 +122,23 @@ async function vote(item, upvote, email) {
   }
 }
 
-async function deleteVote(item, email) {
-  const user_id = await getUserIdForEmail(email);
+async function deleteVote(item, identifier) {
+  const user_id = await getUserIdForIdentifier(identifier);
   await db("votes")
     .where({ item, user_id })
     .delete();
 }
 
-async function ensureUser(email) {
-  const identifier = getIdentifier(email);
+async function ensureUser(identifier) {
+  const hashedIdentifier = getHashedIdentifier(identifier);
   const user = await db
     .from("users")
-    .where({ identifier })
+    .where({ identifier: hashedIdentifier })
     .first()
     .then();
   if (!user) {
     return await db
-      .insert({ identifier })
+      .insert({ identifier: hashedIdentifier })
       .into("users")
       .return();
   }

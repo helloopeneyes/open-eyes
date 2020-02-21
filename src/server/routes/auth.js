@@ -5,7 +5,7 @@ import url from "url";
 import querystring from "querystring";
 
 import db from "../db.js";
-import { getUserEmail } from "../utils.js";
+import { getUserIdentifier } from "../utils.js";
 
 dotenv.config();
 
@@ -24,7 +24,7 @@ router.get("/callback", (req, res, next) => {
     req.logIn(user, err => {
       if (err) return next(err);
 
-      db.ensureUser(getUserEmail(user));
+      db.ensureUser(getUserIdentifier(user));
 
       const returnTo = req.session.returnTo;
       delete req.session.returnTo;

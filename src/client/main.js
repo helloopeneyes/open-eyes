@@ -136,10 +136,6 @@ const LogIn = styled.span`
   flex: 1;
 `;
 
-const Email = styled.span`
-  font-size: 10pt;
-`;
-
 const Summary = styled.p`
   font-size: 14pt;
   font-weight: bold;
@@ -226,15 +222,7 @@ export default class Main extends Component {
           <Header>
             <Logo />
             <HeaderLinks />
-            <LogIn>
-              {this.props.email ? (
-                <span>
-                  <Email title={this.props.email}>{this.props.email}</Email> <a href="/logout">Log out</a>
-                </span>
-              ) : (
-                <a href="/login">Log in</a>
-              )}
-            </LogIn>
+            <LogIn>{this.props.loggedIn ? <a href="/logout">Log out</a> : <a href="/login">Log in</a>}</LogIn>
           </Header>
           <Content>
             <Centered>
