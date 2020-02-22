@@ -153,12 +153,30 @@ const Labels = styled.div`
   flex-wrap: wrap;
 `;
 
+const Overlay = styled.div`
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: hsla(0, 100%, 0%, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const Dialog = styled.div`
+  padding: 1em;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
 const MIN_VOTES = 3;
 
 export default class Main extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = { showDialog: false };
     Object.assign(this.state, props);
   }
 
@@ -167,6 +185,10 @@ export default class Main extends Component {
   }
 
   voteOnItem = async (name, upvote) => {
+    if (!this.props.loggedIn) {
+      this.setState({ showDialog: true });
+      return;
+    }
     await fetch(`/api/votes/${name}`, {
       method: "post",
       headers: { "content-type": "application/json" },
@@ -269,6 +291,16 @@ export default class Main extends Component {
               </>
             )}
           </Content>
+          {this.state.showDialog && (
+            <Overlay>
+              <Dialog>
+                <p>
+                  <a href="login">Log in</a> to vote on items.
+                </p>
+                <Button onClick={() => this.setState({ showDialog: false })}>close</Button>
+              </Dialog>
+            </Overlay>
+          )}
         </Root>
       </ClientContext.Provider>
     );
