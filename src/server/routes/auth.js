@@ -3,6 +3,7 @@ import passport from "passport";
 import dotenv from "dotenv";
 import url from "url";
 import querystring from "querystring";
+import rateLimit from "express-rate-limit";
 
 import db from "../db.js";
 import { getUserIdentifier } from "../utils.js";
@@ -12,7 +13,7 @@ dotenv.config();
 const router = express.Router();
 export default router;
 
-router.get("/login", passport.authenticate("auth0", { scope: "openid email" }), (req, res) => {
+router.get("/login", rateLimit(), passport.authenticate("auth0", { scope: "openid email" }), (req, res) => {
   res.redirect("/");
 });
 

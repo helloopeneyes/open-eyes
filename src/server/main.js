@@ -7,7 +7,6 @@ import passport from "passport";
 import Auth0Strategy from "passport-auth0";
 import session from "express-session";
 import knexSession from "connect-session-knex";
-import rateLimit from "express-rate-limit";
 
 import indexRouter from "./routes/index.js";
 import authRouter from "./routes/auth.js";
@@ -63,7 +62,7 @@ if (app.get("env") === "development") {
 
 app.use("/", indexRouter);
 app.use("/api", apiRouter);
-app.use("/", rateLimit(), authRouter);
+app.use("/", authRouter);
 app.use("/assets", express.static(__dirname + "/../client/assets"));
 
 app.listen(3000);
