@@ -23,18 +23,19 @@ app.set("view engine", "hbs");
 app.use(express.json());
 app.use(compression());
 
-const KnexSession = knexSession(session);
-const sessionStore = new KnexSession();
 const sess = {
   secret: process.env.SESSION_SECRET,
   cookie: {},
   resave: false,
-  saveUninitialized: true,
-  store: sessionStore
+  saveUninitialized: true
 };
+if (app.get("env") !== "production") {
+  const KnexSession = knexSession(session);
+  const sessionStore = new KnexSession();
+  sess.store = sessionStore;
+}
 if (app.get("env") === "production") {
   sess.cookie.secure = true;
-  // app.set('trust proxy', 1);
 }
 app.use(session(sess));
 
