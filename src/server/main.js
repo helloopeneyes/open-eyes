@@ -58,7 +58,7 @@ app.use(passport.session());
 
 if (app.get("env") === "development") {
   const compiler = webpack(webpackConfig);
-  app.use(middleware(compiler, { publicPath: "/" }));
+  app.use(middleware(compiler, { publicPath: "/assets/" }));
 }
 
 app.use("/", indexRouter);
@@ -66,4 +66,4 @@ app.use("/api", apiRouter);
 app.use("/", authRouter);
 app.use("/assets", express.static(__dirname + "/../client/assets"));
 
-app.listen(3000);
+app.listen(process.env.PORT || 3000);
