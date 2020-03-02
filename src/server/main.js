@@ -1,5 +1,8 @@
 import webpack from "webpack";
 import middleware from "webpack-dev-middleware";
+import fs from "fs";
+import http from "http";
+import https from "https";
 import express from "express";
 import compression from "compression";
 import dotenv from "dotenv";
@@ -66,4 +69,17 @@ app.use("/api", apiRouter);
 app.use("/", authRouter);
 app.use("/assets", express.static(__dirname + "/../client/assets"));
 
-app.listen(process.env.PORT || 3000);
+if (app.get("env") === "production") {
+  http.createServer(app).listen(80);
+  https
+    .createServer(
+      {
+        cert: fs.readFileSync(process.env.CERT),
+        key: fs.readFileSync(process.env.KEY)
+      },
+      app
+    )
+    .listen(443);
+} else {
+  http.createServer(app).listen(3000);
+}

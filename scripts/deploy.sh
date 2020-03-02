@@ -27,4 +27,5 @@ run npm run build
 
 run DB=/var/www/open-eyes.db npm run migrate
 
-run NODE_ENV=production PORT=80 DB=/var/www/open-eyes.db forever start src/server/index.js
+run NODE_ENV=production DB=/var/www/open-eyes.db CERT=/var/www/open-eyes.pem KEY=/var/www/open-eyes.key \
+  forever start src/server/index.js
