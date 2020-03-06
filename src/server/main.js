@@ -64,6 +64,18 @@ if (app.get("env") === "development") {
   app.use(middleware(compiler, { publicPath: "/assets/" }));
 }
 
+if (app.get("env") === "production") {
+  app.use("/", (req, res, next) => {
+    if (!req.secure) {
+      const url = new URL(req.url);
+      url.protocol = "https:";
+      res.redirect(301, url.toString());
+    } else {
+      next();
+    }
+  });
+}
+
 app.use("/", indexRouter);
 app.use("/api", apiRouter);
 app.use("/", authRouter);
